@@ -1,15 +1,13 @@
 package com.poisondress.controladores;
 
 import com.poisondress.entidades.ArquivoOberlo;
+import com.poisondress.webServiceCorreio.UtilCorreios;
 import org.primefaces.event.FileUploadEvent;
 import org.primefaces.model.UploadedFile;
 
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -17,11 +15,26 @@ import java.util.List;
 @ViewScoped
 public class RastreamentoCorreiosControlador {
 
+    private String etapa;
+
     @SuppressWarnings("unchecked")
     public void uploadDeArquivo(FileUploadEvent event) {
         try {
             List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",");
-        } catch (IOException e) {
+
+            List<ArquivoOberlo> objetosAlterado = new ArrayList<ArquivoOberlo>();
+
+
+
+            for(ArquivoOberlo dadosOberlo : objetosOberlo) {
+                UtilCorreios.consultarCorreios(dadosOberlo);
+                if(dadosOberlo.getTipo() != null){
+                    objetosAlterado.add(dadosOberlo);
+                }
+            }
+
+
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }
@@ -48,6 +61,7 @@ public class RastreamentoCorreiosControlador {
         oberlo.setIdShopify(vetorObjeto[0]);
         oberlo.setCodRastreamentoCorreios(vetorObjeto[11]);
         oberlo.setIdAliexpress(vetorObjeto[12]);
+        oberlo.setStatus(etapa);
         return oberlo;
     }
 
@@ -56,5 +70,13 @@ public class RastreamentoCorreiosControlador {
         InputStream inputStream = arquivo.getInputstream();
         InputStreamReader inputStreamReader = new InputStreamReader(inputStream);
         return new BufferedReader(inputStreamReader);
+    }
+
+    public String getEtapa() {
+        return etapa;
+    }
+
+    public void setEtapa(String etapa) {
+        this.etapa = etapa;
     }
 }

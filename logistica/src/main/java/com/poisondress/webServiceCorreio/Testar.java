@@ -32,7 +32,7 @@ public class Testar {
             java.lang.String senha = "SRO";
             java.lang.String tipo = "L";
             java.lang.String resultado = "T";
-            java.lang.String lingua = "102";
+            java.lang.String lingua = "101";
             java.lang.String objetos = "RY800982416CNRY800985562CNRY828398258CNRY840669197CN";
 // TODO process result here
             Sroxml result = port.buscaEventos(usuario, senha, tipo, resultado, lingua, objetos);

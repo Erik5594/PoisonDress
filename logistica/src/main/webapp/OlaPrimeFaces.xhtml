@@ -10,6 +10,14 @@
 
     <h:form>
 
+        <p:outputLabel for="etapa" value="Etapa:" />
+        <p:selectOneMenu id="etapa" value="#{rastreamentoCorreiosControlador.etapa}" style="width:125px">
+            <f:selectItem itemLabel="Select One" itemValue="" />
+            <f:selectItem itemLabel="Xbox One" itemValue="Xbox One" />
+            <f:selectItem itemLabel="PS4" itemValue="PS4" />
+            <f:selectItem itemLabel="Wii U" itemValue="Wii U" />
+        </p:selectOneMenu>
+
         <p:fileUpload fileUploadListener="#{rastreamentoCorreiosControlador.uploadDeArquivo}" mode="advanced" label="Selecionar Arquivo"
                       auto="true" sizeLimit="5000000" allowTypes="/(\.|\/)(csv)$/"/>
 

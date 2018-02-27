@@ -1,12 +1,18 @@
 package com.poisondress.entidades;
 
+import java.util.Date;
+
 public class ArquivoOberlo {
 
     private int id;
     private String idShopify;
     private String idAliexpress;
     private String codRastreamentoCorreios;
-    private boolean observar;
+    private String descricao;
+    private String tipo;
+    private String status;
+    private Date dataOcorreu;
+    private int etapaObjeto;
 
     public int getId() {
         return id;
@@ -40,11 +46,35 @@ public class ArquivoOberlo {
         this.codRastreamentoCorreios = codRastreamentoCorreios;
     }
 
-    public boolean isObservar() {
-        return observar;
+    public String getDescricao() {
+        return descricao;
     }
 
-    public void setObservar(boolean observar) {
-        this.observar = observar;
+    public void setDescricao(String descricao) {
+        this.descricao = descricao;
+    }
+
+    public String getTipo() {
+        return tipo;
+    }
+
+    public void setTipo(String tipo) {
+        this.tipo = tipo;
+    }
+
+    public String getStatus() {
+        return status;
+    }
+
+    public void setStatus(String status) {
+        this.status = status;
+    }
+
+    public Date getDataOcorreu() {
+        return dataOcorreu;
+    }
+
+    public void setDataOcorreu(Date dataOcorreu) {
+        this.dataOcorreu = dataOcorreu;
     }
 }
