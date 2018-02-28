@@ -17,6 +17,6 @@ public enum StatusEntregaLDE {
     }
 
     public int getCodigo() {
-        int codigo;
+        return codigo;
     }
 }

@@ -15,24 +15,63 @@ import java.util.List;
 @ViewScoped
 public class RastreamentoCorreiosControlador {
 
-    private String etapa;
+    private int postado = 0;
+    private int fiscalizacao = 1;
+    private int correios = 2;
+    private int pendente = 3;
+    private int entregue = 4;
+    private int devolvido = 5;
+    private int atrasado = 6;
+    private int indefinido = 7;
+    private int pendenteRetirada = 8;
+
+    private String app;
 
     @SuppressWarnings("unchecked")
     public void uploadDeArquivo(FileUploadEvent event) {
         try {
-            List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",");
-
-            List<ArquivoOberlo> objetosAlterado = new ArrayList<ArquivoOberlo>();
 
 
+            List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",", app);
+
+            List<ArquivoOberlo> pedidosAnalise = new ArrayList<ArquivoOberlo>();
+            List<ArquivoOberlo> pedidosDevolvido = new ArrayList<ArquivoOberlo>();
+            List<ArquivoOberlo> pedidosEntreques = new ArrayList<ArquivoOberlo>();
+            List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
+            List<ArquivoOberlo> pedidosPendenteRetirada = new ArrayList<ArquivoOberlo>();
 
             for(ArquivoOberlo dadosOberlo : objetosOberlo) {
                 UtilCorreios.consultarCorreios(dadosOberlo);
-                if(dadosOberlo.getTipo() != null){
-                    objetosAlterado.add(dadosOberlo);
+                if(dadosOberlo.isAtrasado()){
+                    pedidosAnalise.add(dadosOberlo);
+                    pedidosAtrasados.add(dadosOberlo);
+                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue){
+                    pedidosEntreques.add(dadosOberlo);
+                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
+                    pedidosDevolvido.add(dadosOberlo);
+                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == pendenteRetirada){
+                    pedidosPendenteRetirada.add(dadosOberlo);
+                    pedidosAnalise.add(dadosOberlo);
+                }else{
+                    pedidosAnalise.add(dadosOberlo);
                 }
             }
 
+            if(pedidosAnalise != null && !pedidosAnalise.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosAnalise, "arq-completo.csv");
+            }
+            if(pedidosDevolvido != null && !pedidosDevolvido.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosDevolvido, "devolvidos.csv");
+            }
+            if(pedidosEntreques != null && !pedidosEntreques.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosEntreques, "entregues.csv");
+            }
+            if(pedidosAtrasados != null && !pedidosAtrasados.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosAtrasados, "atrasados.csv");
+            }
+            if(pedidosPendenteRetirada != null && !pedidosPendenteRetirada.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosPendenteRetirada, "pendente-entrega.csv");
+            }
 
         } catch (Exception e) {
             e.printStackTrace();
@@ -40,28 +79,48 @@ public class RastreamentoCorreiosControlador {
     }
 
 
-    private List<ArquivoOberlo> getListaDeObjetoDoArquivo(BufferedReader linhasArquivo, String separador) throws IOException{
+    private List<ArquivoOberlo> getListaDeObjetoDoArquivo(BufferedReader linhasArquivo, String separador, String aplicativo) throws IOException{
         List<ArquivoOberlo> objsOberlo = new ArrayList<ArquivoOberlo>();
         String linha = linhasArquivo.readLine();
-        linha = linhasArquivo.readLine();
-        while(linha != null){
-            ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjeto(linha.split(separador));
-            if(objOberlo != null){
-                objsOberlo.add(objOberlo);
-            }
+        if("0".equals(aplicativo)) {
             linha = linhasArquivo.readLine();
+            while (linha != null) {
+                ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjetoOberlo(linha.split(separador));
+                if (objOberlo != null) {
+                    objsOberlo.add(objOberlo);
+                }
+                linha = linhasArquivo.readLine();
+            }
+        }else{
+            while (linha != null) {
+                ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjetoAplicacao(linha.split(separador));
+                if (objOberlo != null) {
+                    objsOberlo.add(objOberlo);
+                }
+                linha = linhasArquivo.readLine();
+            }
         }
         linhasArquivo.close();
         return objsOberlo;
     }
 
 
-    private Object obterObjeto(String[] vetorObjeto) {
+    private Object obterObjetoAplicacao(String[] vetorObjeto) {
         ArquivoOberlo oberlo = new ArquivoOberlo();
         oberlo.setIdShopify(vetorObjeto[0]);
-        oberlo.setCodRastreamentoCorreios(vetorObjeto[11]);
+        oberlo.setIdAliexpress(vetorObjeto[1]);
+        oberlo.setCodRastreamento(vetorObjeto[2]);
+        oberlo.setTipoCorreios(vetorObjeto[3]);
+        oberlo.setStatusCorreios(vetorObjeto[4]);
+        oberlo.setEtapaAtual(vetorObjeto[5]);
+        return oberlo;
+    }
+
+    private Object obterObjetoOberlo(String[] vetorObjeto) {
+        ArquivoOberlo oberlo = new ArquivoOberlo();
+        oberlo.setIdShopify(vetorObjeto[0]);
+        oberlo.setCodRastreamento(vetorObjeto[11]);
         oberlo.setIdAliexpress(vetorObjeto[12]);
-        oberlo.setStatus(etapa);
         return oberlo;
     }
 
@@ -72,11 +131,11 @@ public class RastreamentoCorreiosControlador {
         return new BufferedReader(inputStreamReader);
     }
 
-    public String getEtapa() {
-        return etapa;
+    public String getApp() {
+        return app;
     }
 
-    public void setEtapa(String etapa) {
-        this.etapa = etapa;
+    public void setApp(String app) {
+        this.app = app;
     }
 }

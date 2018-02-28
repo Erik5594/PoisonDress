@@ -4,7 +4,10 @@ import com.poisondress.entidades.*;
 
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
+import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
 
 public class UtilCorreios {
@@ -17,6 +20,7 @@ public class UtilCorreios {
     public static final int DEVOLVIDO = 5;
     public static final int ATRASADO = 6;
     public static final int INDEFINIDO = 7;
+    public static final int AGUARDANDO_ENTREGA = 8;
 
     public static String USUARIO = "ECT";
     public static String SENHA = "SRO";
@@ -24,107 +28,84 @@ public class UtilCorreios {
     public static String RESULTADO = "U";
     public static String LINGUA = "101";
 
+    private static SimpleDateFormat format = new SimpleDateFormat("dd/MM/yyyy");
+
     public static void consultarCorreios(ArquivoOberlo dadosOberlo) throws Exception{
         Rastro service = new Rastro();
         Service port = service.getServicePort();
-        Sroxml result = port.buscaEventos(USUARIO, SENHA, TIPO, RESULTADO, LINGUA, dadosOberlo.getCodRastreamentoCorreios());
+        Sroxml result = port.buscaEventos(USUARIO, SENHA, TIPO, RESULTADO, LINGUA, dadosOberlo.getCodRastreamento());
+        String atrasado = "ATRASADO";
 
         if(result != null && result.getObjeto() != null && !result.getObjeto().isEmpty()){
             Objeto objeto = result.getObjeto().get(0);
                 if(objeto != null && objeto.getEvento() != null && !objeto.getEvento().isEmpty()){
                     Eventos eventos = objeto.getEvento().get(0);
-                    String tipo = eventos.getTipo();
-                    String status = eventos.getStatus();
-                    int etapaAtualCorreios = etapaAtual(tipo, status);
-                    int etapaAtualOberlo = etapaAtual(dadosOberlo.getTipo(), dadosOberlo.getStatus());
-                    if(etapaAtualCorreios != etapaAtualOberlo){
-                        dadosOberlo.setStatus(status);
-                        dadosOberlo.setTipo(tipo);
-                    }else{
-                        dadosOberlo.setStatus(null);
-                        dadosOberlo.setTipo(null);
-                    }
+                    dadosOberlo.setTipoCorreios(eventos.getTipo());
+                    dadosOberlo.setStatusCorreios(eventos.getStatus());
+                    dadosOberlo.setDataAlteracaoCorreios(getData(eventos.getData()));
+                    definirEtapaAtual(dadosOberlo, atrasado, eventos);
                 }
         }
     }
 
-    public void imprimirArquivos(List<ArquivoOberlo> oberlos){
-        List<ArquivoOberlo> novosPostados = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosFiscalizacao = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosCorreios = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosPendentes = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosEntregues = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosDevolvido = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosAtrasado = new ArrayList<ArquivoOberlo>();
-        List<ArquivoOberlo> novosIndefinido = new ArrayList<ArquivoOberlo>();
+    private static void definirEtapaAtual(ArquivoOberlo dadosOberlo, String atrasado, Eventos eventos) {
+        int etapaAtual = isEtapaAtual(eventos.getTipo(), eventos.getStatus());
 
-        for(ArquivoOberlo oberlo : oberlos){
-            switch (etapaAtual(oberlo.getTipo(), oberlo.getStatus())){
-                case POSTADO :
-                    novosPostados.add(oberlo);
-                    break;
-                case FISCALIZACAO :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case CORREIOS :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case PENDENTE :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case ENTREGUE :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case DEVOLVIDO :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case ATRASADO :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                case INDEFINIDO :
-                    novosFiscalizacao.add(oberlo);
-                    break;
-                default:
-                    novosIndefinido.add(oberlo);
-                    break;
+        if((etapaAtual != DEVOLVIDO && etapaAtual != ENTREGUE) || etapaAtual == ATRASADO){
+            if("81010971".equals(eventos.getCodigo()) && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 60)){
+                etapaAtual = ATRASADO;
+                dadosOberlo.setAtrasado(true);
+                atrasado = "ATRASADO-CORREIOS";
+            }else if("00156000".equals(eventos.getCodigo()) && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 80)) {
+                etapaAtual = ATRASADO;
+                dadosOberlo.setAtrasado(true);
+                atrasado = "ATRASADO-FISCALIZACAO";
             }
         }
 
-        if(novosPostados != null && !novosPostados.isEmpty()){
-            criarArquivo(novosPostados, "novosPostados.csv");
-        }
-
-        if(novosPendentes != null && !novosPendentes.isEmpty()){
-            criarArquivo(novosPendentes, "novosPendentes.csv");
-        }
-
-        if(novosCorreios != null && !novosCorreios.isEmpty()){
-            criarArquivo(novosCorreios, "novosCorreios.csv");
-        }
-
-        if(novosDevolvido != null && !novosDevolvido.isEmpty()){
-            criarArquivo(novosDevolvido, "novosDevolvido.csv");
-        }
-
-        if(novosEntregues != null && !novosEntregues.isEmpty()){
-            criarArquivo(novosEntregues, "novosEntregues.csv");
-        }
-
-        if(novosFiscalizacao != null && !novosFiscalizacao.isEmpty()){
-            criarArquivo(novosFiscalizacao, "novosFiscalizacao.csv");
-        }
-
-        if(novosIndefinido != null && !novosIndefinido.isEmpty()){
-            criarArquivo(novosIndefinido, "novosIndefinido.csv");
-        }
-
-        if(novosAtrasado != null && !novosAtrasado.isEmpty()){
-            criarArquivo(novosAtrasado, "novosAtrasado.csv");
+        switch (etapaAtual){
+            case POSTADO:
+                dadosOberlo.setEtapaAtual("POSTADO");
+                break;
+            case FISCALIZACAO:
+                dadosOberlo.setEtapaAtual("FISCALIZACAO");
+                break;
+            case CORREIOS:
+                dadosOberlo.setEtapaAtual("CORREIOS");
+                break;
+            case PENDENTE:
+                dadosOberlo.setEtapaAtual("PENDENTE");
+                break;
+            case ENTREGUE:
+                dadosOberlo.setEtapaAtual("ENTREGUE");
+                break;
+            case DEVOLVIDO:
+                dadosOberlo.setEtapaAtual("DEVOLVIDO");
+                break;
+            case ATRASADO:
+                dadosOberlo.setEtapaAtual(atrasado);
+                break;
+            case INDEFINIDO:
+                dadosOberlo.setEtapaAtual("INDEFINIDO");
+                break;
+            case AGUARDANDO_ENTREGA:
+                dadosOberlo.setEtapaAtual("AGUARDANDO RETIRADA");
+                break;
+            default:
+                dadosOberlo.setEtapaAtual("INDEFINIDO");
+                break;
         }
     }
 
-    private static int etapaAtual(String tipo, String status){
-        if("BDE".equals(tipo)){
+    public static boolean isAtrasado(Calendar dataUltimaModificacao, int dias) {
+        Calendar hoje = Calendar.getInstance();
+        Calendar prazoFinal = dataUltimaModificacao;
+        prazoFinal.add(Calendar.DAY_OF_YEAR, dias);
+        return prazoFinal.compareTo(hoje) <= 0;
+    }
+
+    public static int isEtapaAtual(String tipo, String status){
+        if("BDE".equals(tipo) || "BDI".equals(tipo) || "BDR".equals(tipo)){
             return validacaoBDE(status);
         }else if("FC".equals(tipo)){
             return validacaoFC(status);
@@ -175,8 +156,8 @@ public class UtilCorreios {
     }
 
     private static int validacaoLDI(String status) {
-        if (StatusEntregaLDI.PENDENTE.getStatus().contains(status)) {
-            return StatusEntregaLDI.PENDENTE.getCodigo();
+        if (StatusEntregaLDI.AGUARDANDO_RETIRADA.getStatus().contains(status)) {
+            return StatusEntregaLDI.AGUARDANDO_RETIRADA.getCodigo();
         }
         return 7;
     }
@@ -218,17 +199,23 @@ public class UtilCorreios {
         return 7;
     }
 
-    private void criarArquivo(List<ArquivoOberlo> objetos, String nomeArquivoEntrada){
+    public static void criarArquivo(List<ArquivoOberlo> objetos, String nomeArquivoEntrada){
 
         String nomeArquivo = "c:\\".concat(nomeArquivoEntrada);
         try {
             FileWriter writer = new FileWriter(nomeArquivo);
             for(ArquivoOberlo objeto : objetos){
+                writer.append(objeto.getIdShopify());
+                writer.append(',');
                 writer.append(objeto.getIdAliexpress());
                 writer.append(',');
-                writer.append(objeto.getCodRastreamentoCorreios());
+                writer.append(objeto.getCodRastreamento());
                 writer.append(',');
-                writer.append(objeto.getDescricao());
+                writer.append(objeto.getTipoCorreios());
+                writer.append(',');
+                writer.append(objeto.getStatusCorreios());
+                writer.append(',');
+                writer.append(objeto.getEtapaAtual());
                 writer.append('\n');
             }
             writer.flush();
@@ -236,6 +223,14 @@ public class UtilCorreios {
         }catch (IOException e){
             //TODO
         }
+    }
 
+    private static Calendar getData(String data) throws ParseException {
+        if(data != null && !"".equals(data)){
+            Calendar calendar = Calendar.getInstance();
+            calendar.setTime(format.parse(data));
+            return calendar;
+        }
+        return null;
     }
 }

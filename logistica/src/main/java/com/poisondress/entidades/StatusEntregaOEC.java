@@ -17,6 +17,6 @@ public enum StatusEntregaOEC {
     }
 
     public int getCodigo() {
-        int codigo;
+        return codigo;
     }
 }

@@ -1,26 +1,18 @@
 package com.poisondress.entidades;
 
+import java.util.Calendar;
 import java.util.Date;
 
 public class ArquivoOberlo {
 
-    private int id;
     private String idShopify;
     private String idAliexpress;
-    private String codRastreamentoCorreios;
-    private String descricao;
-    private String tipo;
-    private String status;
-    private Date dataOcorreu;
-    private int etapaObjeto;
-
-    public int getId() {
-        return id;
-    }
-
-    public void setId(int id) {
-        this.id = id;
-    }
+    private String codRastreamento;
+    private Calendar dataAlteracaoCorreios;
+    private String tipoCorreios;
+    private String statusCorreios;
+    private String etapaAtual;
+    private boolean atrasado;
 
     public String getIdShopify() {
         return idShopify;
@@ -38,43 +30,51 @@ public class ArquivoOberlo {
         this.idAliexpress = idAliexpress;
     }
 
-    public String getCodRastreamentoCorreios() {
-        return codRastreamentoCorreios;
+    public String getCodRastreamento() {
+        return codRastreamento;
     }
 
-    public void setCodRastreamentoCorreios(String codRastreamentoCorreios) {
-        this.codRastreamentoCorreios = codRastreamentoCorreios;
+    public void setCodRastreamento(String codRastreamento) {
+        this.codRastreamento = codRastreamento;
     }
 
-    public String getDescricao() {
-        return descricao;
+    public Calendar getDataAlteracaoCorreios() {
+        return dataAlteracaoCorreios;
     }
 
-    public void setDescricao(String descricao) {
-        this.descricao = descricao;
+    public void setDataAlteracaoCorreios(Calendar dataAlteracaoCorreios) {
+        this.dataAlteracaoCorreios = dataAlteracaoCorreios;
     }
 
-    public String getTipo() {
-        return tipo;
+    public String getTipoCorreios() {
+        return tipoCorreios;
     }
 
-    public void setTipo(String tipo) {
-        this.tipo = tipo;
+    public void setTipoCorreios(String tipoCorreios) {
+        this.tipoCorreios = tipoCorreios;
     }
 
-    public String getStatus() {
-        return status;
+    public String getStatusCorreios() {
+        return statusCorreios;
     }
 
-    public void setStatus(String status) {
-        this.status = status;
+    public void setStatusCorreios(String statusCorreios) {
+        this.statusCorreios = statusCorreios;
     }
 
-    public Date getDataOcorreu() {
-        return dataOcorreu;
+    public String getEtapaAtual() {
+        return etapaAtual;
     }
 
-    public void setDataOcorreu(Date dataOcorreu) {
-        this.dataOcorreu = dataOcorreu;
+    public void setEtapaAtual(String etapaAtual) {
+        this.etapaAtual = etapaAtual;
+    }
+
+    public boolean isAtrasado() {
+        return atrasado;
+    }
+
+    public void setAtrasado(boolean atrasado) {
+        this.atrasado = atrasado;
     }
 }

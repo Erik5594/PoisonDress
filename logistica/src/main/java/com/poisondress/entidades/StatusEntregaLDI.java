@@ -1,8 +1,7 @@
 package com.poisondress.entidades;
 
 public enum StatusEntregaLDI {
-    PENDENTE("00*01*02*03*14",3);
-
+    AGUARDANDO_RETIRADA("00*01*02*03*14",8);
 
     private String status;
     private int codigo;
@@ -17,6 +16,6 @@ public enum StatusEntregaLDI {
     }
 
     public int getCodigo() {
-        int codigo;
+        return codigo;
     }
 }
