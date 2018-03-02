@@ -13,6 +13,7 @@ public class ArquivoOberlo {
     private String statusCorreios;
     private String etapaAtual;
     private boolean atrasado;
+    private PedidoCliente pedido;
 
     public String getIdShopify() {
         return idShopify;
@@ -76,5 +77,13 @@ public class ArquivoOberlo {
 
     public void setAtrasado(boolean atrasado) {
         this.atrasado = atrasado;
+    }
+
+    public PedidoCliente getPedido() {
+        return pedido;
+    }
+
+    public void setPedido(PedidoCliente pedido) {
+        this.pedido = pedido;
     }
 }

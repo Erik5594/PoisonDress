@@ -51,15 +51,21 @@ public class UtilCorreios {
     private static void definirEtapaAtual(ArquivoOberlo dadosOberlo, String atrasado, Eventos eventos) {
         int etapaAtual = isEtapaAtual(eventos.getTipo(), eventos.getStatus());
 
-        if((etapaAtual != DEVOLVIDO && etapaAtual != ENTREGUE) || etapaAtual == ATRASADO){
-            if("81010971".equals(eventos.getCodigo()) && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 60)){
+        if((etapaAtual != DEVOLVIDO && etapaAtual != ENTREGUE) || etapaAtual == ATRASADO) {
+            if(etapaAtual == FISCALIZACAO && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 80)) {
                 etapaAtual = ATRASADO;
                 dadosOberlo.setAtrasado(true);
-                atrasado = "ATRASADO-CORREIOS";
-            }else if("00156000".equals(eventos.getCodigo()) && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 80)) {
-                etapaAtual = ATRASADO;
-                dadosOberlo.setAtrasado(true);
-                atrasado = "ATRASADO-FISCALIZACAO";
+                atrasado = "ATRASADO-FISCALIZAÇÃO";
+            } else if(isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 60)){
+                if("81010971".equals(eventos.getCodigo())) {
+                    etapaAtual = ATRASADO;
+                    dadosOberlo.setAtrasado(true);
+                    atrasado = "ATRASADO-CORREIOS";
+                }else if("00156000".equals(eventos.getCodigo())){
+                    etapaAtual = ATRASADO;
+                    dadosOberlo.setAtrasado(true);
+                    atrasado = "ATRASADO-ABRIR-DISPUTA-ALIEXPRESS";
+                }
             }
         }
 

@@ -2,22 +2,27 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml"
       xmlns:h="http://java.sun.com/jsf/html"
-      xmlns:p="http://primefaces.org/ui"
-      xmlns:f="http://java.sun.com/jsf/core">
+      xmlns:f="http://java.sun.com/jsf/core"
+      xmlns:p="http://primefaces.org/ui">
 <h:head>
     <meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
 </h:head>
 <h:body>
 
-    <h:form>
-        <p:outputLabel for="aplicacao" value="Aplicacao:" />
-        <p:selectOneMenu id="aplicacao" value="#{rastreamentoCorreiosControlador.app}" style="width:125px">
-            <f:selectItem itemLabel="Oberlo" itemValue="0" />
-            <f:selectItem itemLabel="Aplicação" itemValue="1" />
-        </p:selectOneMenu>
+    <h:form id="panel">
+        <p:messages/>
+        <p:column >
+            <p:outputLabel for="aplicacao" value="Aplicacao:" />
+            <p:selectOneMenu id="aplicacao" value="#{rastreamentoCorreiosControlador.app}" >
+                <f:selectItem itemLabel="Selecionar" itemValue="" noSelectionOption="true" />
+                <f:selectItem itemLabel="Oberlo" itemValue="0" />
+                <f:selectItem itemLabel="Aplicação" itemValue="1" />
+                <p:ajax process="panel" update="panel" event="change"/>
+            </p:selectOneMenu>
+        </p:column>
 
-        <p:fileUpload fileUploadListener="#{rastreamentoCorreiosControlador.uploadDeArquivo}" mode="advanced" label="Selecionar Arquivo"
-                      auto="true" sizeLimit="5000000" allowTypes="/(\.|\/)(csv)$/"/>
+        <p:fileUpload fileUploadListener="#{rastreamentoCorreiosControlador.uploadDeArquivo}" mode="advanced" label="Selecionar Arquivo" update="panel"
+                      auto="true" sizeLimit="5000000" allowTypes="/(\.|\/)(csv)$/" />
 
     </h:form>
 
