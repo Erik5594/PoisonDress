@@ -38,13 +38,18 @@ public class RastreamentoCorreiosControlador {
             List<ArquivoOberlo> pedidosDevolvido = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosEntreques = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
+            List<ArquivoOberlo> pedidosAtrasadosChina = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosPendenteRetirada = new ArrayList<ArquivoOberlo>();
 
             for(ArquivoOberlo dadosOberlo : objetosOberlo) {
                 UtilCorreios.consultarCorreios(dadosOberlo);
                 if(dadosOberlo.isAtrasado()){
                     pedidosAnalise.add(dadosOberlo);
-                    pedidosAtrasados.add(dadosOberlo);
+                    if(dadosOberlo.isChina()) {
+                        pedidosAtrasadosChina.add(dadosOberlo);
+                    }else{
+                        pedidosAtrasados.add(dadosOberlo);
+                    }
                 }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue){
                     pedidosEntreques.add(dadosOberlo);
                 }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
@@ -68,6 +73,9 @@ public class RastreamentoCorreiosControlador {
             }
             if(pedidosAtrasados != null && !pedidosAtrasados.isEmpty()) {
                 UtilCorreios.criarArquivo(pedidosAtrasados, "atrasados.csv");
+            }
+            if(pedidosAtrasadosChina != null && !pedidosAtrasadosChina.isEmpty()) {
+                UtilCorreios.criarArquivo(pedidosAtrasadosChina, "atrasados-china.csv");
             }
             if(pedidosPendenteRetirada != null && !pedidosPendenteRetirada.isEmpty()) {
                 UtilCorreios.criarArquivo(pedidosPendenteRetirada, "pendente-entrega.csv");

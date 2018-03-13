@@ -14,6 +14,7 @@ public class ArquivoOberlo {
     private String etapaAtual;
     private boolean atrasado;
     private PedidoCliente pedido;
+    private boolean china;
 
     public String getIdShopify() {
         return idShopify;
@@ -85,5 +86,13 @@ public class ArquivoOberlo {
 
     public void setPedido(PedidoCliente pedido) {
         this.pedido = pedido;
+    }
+
+    public boolean isChina() {
+        return china;
+    }
+
+    public void setChina(boolean china) {
+        this.china = china;
     }
 }

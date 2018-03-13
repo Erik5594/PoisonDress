@@ -55,15 +55,18 @@ public class UtilCorreios {
             if(etapaAtual == FISCALIZACAO && isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 80)) {
                 etapaAtual = ATRASADO;
                 dadosOberlo.setAtrasado(true);
+                dadosOberlo.setChina(false);
                 atrasado = "ATRASADO-FISCALIZAÇÃO";
             } else if(isAtrasado(dadosOberlo.getDataAlteracaoCorreios(), 60)){
                 if("81010971".equals(eventos.getCodigo())) {
                     etapaAtual = ATRASADO;
                     dadosOberlo.setAtrasado(true);
+                    dadosOberlo.setChina(false);
                     atrasado = "ATRASADO-CORREIOS";
                 }else if("00156000".equals(eventos.getCodigo())){
                     etapaAtual = ATRASADO;
                     dadosOberlo.setAtrasado(true);
+                    dadosOberlo.setChina(true);
                     atrasado = "ATRASADO-ABRIR-DISPUTA-ALIEXPRESS";
                 }
             }
