@@ -234,6 +234,22 @@ public class UtilCorreios {
         }
     }
 
+    public static void criarArquivoComLinks(List<String> links, String nomeArquivoEntrada){
+
+        String nomeArquivo = "c:\\".concat(nomeArquivoEntrada);
+        try {
+            FileWriter writer = new FileWriter(nomeArquivo);
+            for(String link : links){
+                writer.append(link);
+                writer.append('\n');
+            }
+            writer.flush();
+            writer.close();
+        }catch (IOException e){
+            //TODO
+        }
+    }
+
     private static Calendar getData(String data) throws ParseException {
         if(data != null && !"".equals(data)){
             Calendar calendar = Calendar.getInstance();

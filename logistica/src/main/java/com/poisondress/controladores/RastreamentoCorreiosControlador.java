@@ -24,6 +24,8 @@ public class RastreamentoCorreiosControlador {
     private int atrasado = 6;
     private int indefinido = 7;
     private int pendenteRetirada = 8;
+    private static String LINK_PEDIDO_ALIEXPRESS = "https://trade.aliexpress.com/order_detail.htm?spm=a2g0s.9042311.0.0.Xd5mg8&orderId=";
+    private static String JA_TRATADO_ALIEXPRESS = "87021575702768*87255763632768*87671630732768*87494521662768*87670677602768*87531216552768*87665275362768*87530939322768*87488561182768*87590062522768*8758864232768*87590301012768*87532131542768*87665238832768*87590422642768*87665438112768*87536817882768*87537775672768*87595462322768*87494720932768*8753745455768*87595267052768*87537377232768*87538290532768*87537814022768*87494048642768*87671757042768*87494685132768*87671319772768*87595902862768*87494408572768*8596300252768*87595705432768*87672154962768*87672314792768*87538530382768*87495125342768*87596023252768*87931291082768*88088043082768*88374257532768*8846238602768*88608449242768*88608449242768*88608329422768*";
 
     private String app;
 
@@ -40,13 +42,16 @@ public class RastreamentoCorreiosControlador {
             List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosAtrasadosChina = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosPendenteRetirada = new ArrayList<ArquivoOberlo>();
+            List<String> estenderPrazoProtecao = new ArrayList<String>();
 
             for(ArquivoOberlo dadosOberlo : objetosOberlo) {
                 UtilCorreios.consultarCorreios(dadosOberlo);
                 if(dadosOberlo.isAtrasado()){
                     pedidosAnalise.add(dadosOberlo);
                     if(dadosOberlo.isChina()) {
-                        pedidosAtrasadosChina.add(dadosOberlo);
+                        if(!JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())){
+                            estenderPrazoProtecao.add(LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
+                        }
                     }else{
                         pedidosAtrasados.add(dadosOberlo);
                     }
@@ -74,8 +79,8 @@ public class RastreamentoCorreiosControlador {
             if(pedidosAtrasados != null && !pedidosAtrasados.isEmpty()) {
                 UtilCorreios.criarArquivo(pedidosAtrasados, "atrasados.csv");
             }
-            if(pedidosAtrasadosChina != null && !pedidosAtrasadosChina.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosAtrasadosChina, "atrasados-china.csv");
+            if(estenderPrazoProtecao != null && !estenderPrazoProtecao.isEmpty()) {
+                UtilCorreios.criarArquivoComLinks(estenderPrazoProtecao, "atrasados-china.txt");
             }
             if(pedidosPendenteRetirada != null && !pedidosPendenteRetirada.isEmpty()) {
                 UtilCorreios.criarArquivo(pedidosPendenteRetirada, "pendente-entrega.csv");
