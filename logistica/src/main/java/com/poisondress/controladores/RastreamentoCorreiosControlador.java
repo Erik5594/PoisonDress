@@ -36,8 +36,6 @@ public class RastreamentoCorreiosControlador {
 
             List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",", app);
 
-            List<ArquivoOberlo> pedidosAnalise = new ArrayList<ArquivoOberlo>();
-            List<ArquivoOberlo> pedidosDevolvido = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosEntreques = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosPendenteRetirada = new ArrayList<ArquivoOberlo>();
@@ -45,37 +43,35 @@ public class RastreamentoCorreiosControlador {
             List<String> disputa = new ArrayList<String>();
 
             for(ArquivoOberlo dadosOberlo : objetosOberlo) {
-                UtilCorreios.consultarCorreios(dadosOberlo);
-                if(dadosOberlo.isAtrasado()){
-                    pedidosAnalise.add(dadosOberlo);
-                    if(!dadosOberlo.isChina()
-                            && !Consts.JA_ABERTO_RECLAMACAO.contains(dadosOberlo.getCodRastreamento())) {
+                if(!(Consts.JA_ENTREGUES.contains(dadosOberlo.getIdAliexpress())
+                        || Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress()))) {
+                    UtilCorreios.consultarCorreios(dadosOberlo);
+                    if(dadosOberlo.isAtrasado()){
+                        if(!dadosOberlo.isChina()
+                                && !Consts.JA_ABERTO_RECLAMACAO.contains(dadosOberlo.getCodRastreamento())) {
                             pedidosAtrasados.add(dadosOberlo);
-                    }
-                    if (!Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())) {
+                        }
+                        if (!Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())) {
                             estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
+                        }
+                    }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue){
+                        pedidosEntreques.add(dadosOberlo);
+                    }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
+                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())){
+                            disputa.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
+                        }
+                    }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == pendenteRetirada){
+                        if(!Consts.JA_AGUARDA_RETIRADA.contains(dadosOberlo.getIdAliexpress())){
+                            pedidosPendenteRetirada.add(dadosOberlo);
+                        }
+                    }else {
+                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress()) && dadosOberlo.getStatusCorreios() == null){
+                            disputa.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
+                        }
                     }
-                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue){
-                    pedidosEntreques.add(dadosOberlo);
-                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
-                    pedidosDevolvido.add(dadosOberlo);
-                    if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())){
-                        disputa.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
-                    }
-                }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == pendenteRetirada){
-                    pedidosPendenteRetirada.add(dadosOberlo);
-                    pedidosAnalise.add(dadosOberlo);
-                }else{
-                    pedidosAnalise.add(dadosOberlo);
                 }
             }
 
-            if(pedidosAnalise != null && !pedidosAnalise.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosAnalise, "arq-completo.csv");
-            }
-            if(pedidosDevolvido != null && !pedidosDevolvido.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosDevolvido, "devolvidos.csv");
-            }
             if(pedidosEntreques != null && !pedidosEntreques.isEmpty()) {
                 UtilCorreios.criarArquivo(pedidosEntreques, "entregues.csv");
             }
