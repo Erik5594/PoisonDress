@@ -11,16 +11,6 @@
 
     <h:form id="panel">
         <p:messages/>
-        <p:column >
-            <p:outputLabel for="aplicacao" value="Aplicacao:" />
-            <p:selectOneMenu id="aplicacao" value="#{rastreamentoCorreiosControlador.app}" >
-                <f:selectItem itemLabel="Selecionar" itemValue="" noSelectionOption="true" />
-                <f:selectItem itemLabel="Oberlo" itemValue="0" />
-                <f:selectItem itemLabel="Aplicação" itemValue="1" />
-                <p:ajax process="panel" update="panel" event="change"/>
-            </p:selectOneMenu>
-        </p:column>
-
         <p:fileUpload fileUploadListener="#{rastreamentoCorreiosControlador.uploadDeArquivo}" mode="advanced" label="Selecionar Arquivo" update="panel"
                       auto="true" sizeLimit="5000000" allowTypes="/(\.|\/)(csv)$/" />
 

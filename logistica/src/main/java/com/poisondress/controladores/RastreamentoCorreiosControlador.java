@@ -9,7 +9,10 @@ import org.primefaces.model.UploadedFile;
 import javax.faces.bean.ManagedBean;
 import javax.faces.bean.ViewScoped;
 import java.io.*;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.List;
 
 @ManagedBean
@@ -26,15 +29,12 @@ public class RastreamentoCorreiosControlador {
     private int indefinido = 7;
     private int pendenteRetirada = 8;
 
-
-    private String app;
-
     @SuppressWarnings("unchecked")
     public void uploadDeArquivo(FileUploadEvent event) {
         try {
 
 
-            List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",", app);
+            List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",");
 
             List<ArquivoOberlo> pedidosEntreques = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
@@ -46,26 +46,47 @@ public class RastreamentoCorreiosControlador {
                 if(!(Consts.JA_ENTREGUES.contains(dadosOberlo.getIdAliexpress())
                         || Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress()))) {
                     UtilCorreios.consultarCorreios(dadosOberlo);
+                    if(!Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
+                            && UtilCorreios.isAtrasado(dadosOberlo.getDataCriacaoPedido(), 90)
+                            && !estenderPrazoProtecao.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress())){
+                        estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
+                    }
+                    if(Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
+                            && UtilCorreios.isAtrasado(dadosOberlo.getDataCriacaoPedido(), 210)
+                            && !estenderPrazoProtecao.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress() + " 3º")){
+                        estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress() + " 3°");
+                    }
+                    if(Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
+                            && UtilCorreios.isAtrasado(dadosOberlo.getDataCriacaoPedido(), 150)
+                            && !estenderPrazoProtecao.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress() + " 2º")){
+                        estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress() + " 2º");
+                    }
                     if(dadosOberlo.isAtrasado()){
                         if(!dadosOberlo.isChina()
-                                && !Consts.JA_ABERTO_RECLAMACAO.contains(dadosOberlo.getCodRastreamento())) {
+                                && !Consts.JA_ABERTO_RECLAMACAO.contains(dadosOberlo.getCodRastreamento())
+                                && !pedidosAtrasados.contains(dadosOberlo)) {
                             pedidosAtrasados.add(dadosOberlo);
                         }
-                        if (!Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())) {
+                        if (!Consts.JA_TRATADO_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
+                                && !estenderPrazoProtecao.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress())) {
                             estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
                         }
-                    }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue){
+                    }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue
+                            && !pedidosEntreques.contains(dadosOberlo)){
                         pedidosEntreques.add(dadosOberlo);
                     }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
-                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())){
+                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
+                                && !disputa.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress())){
                             disputa.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
                         }
                     }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == pendenteRetirada){
-                        if(!Consts.JA_AGUARDA_RETIRADA.contains(dadosOberlo.getIdAliexpress())){
+                        if(!Consts.JA_AGUARDA_RETIRADA.contains(dadosOberlo.getIdAliexpress())
+                                && !pedidosPendenteRetirada.contains(dadosOberlo)){
                             pedidosPendenteRetirada.add(dadosOberlo);
                         }
                     }else {
-                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress()) && dadosOberlo.getStatusCorreios() == null){
+                        if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress()) && dadosOberlo.getStatusCorreios() == null
+                                && !disputa.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress())){
                             disputa.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
                         }
                     }
@@ -94,49 +115,41 @@ public class RastreamentoCorreiosControlador {
     }
 
 
-    private List<ArquivoOberlo> getListaDeObjetoDoArquivo(BufferedReader linhasArquivo, String separador, String aplicativo) throws IOException{
+
+    private List<ArquivoOberlo> getListaDeObjetoDoArquivo(BufferedReader linhasArquivo, String separador) throws IOException{
         List<ArquivoOberlo> objsOberlo = new ArrayList<ArquivoOberlo>();
         String linha = linhasArquivo.readLine();
-        if("0".equals(aplicativo)) {
+        linha = linhasArquivo.readLine();
+        while (linha != null) {
+            ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjetoOberlo(linha.split(separador));
+            if (objOberlo != null) {
+                objsOberlo.add(objOberlo);
+            }
             linha = linhasArquivo.readLine();
-            while (linha != null) {
-                ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjetoOberlo(linha.split(separador));
-                if (objOberlo != null) {
-                    objsOberlo.add(objOberlo);
-                }
-                linha = linhasArquivo.readLine();
-            }
-        }else{
-            while (linha != null) {
-                ArquivoOberlo objOberlo = (ArquivoOberlo) obterObjetoAplicacao(linha.split(separador));
-                if (objOberlo != null) {
-                    objsOberlo.add(objOberlo);
-                }
-                linha = linhasArquivo.readLine();
-            }
         }
         linhasArquivo.close();
         return objsOberlo;
     }
 
 
-    private Object obterObjetoAplicacao(String[] vetorObjeto) {
-        ArquivoOberlo oberlo = new ArquivoOberlo();
-        oberlo.setIdShopify(vetorObjeto[0]);
-        oberlo.setIdAliexpress(vetorObjeto[1]);
-        oberlo.setCodRastreamento(vetorObjeto[2]);
-        oberlo.setTipoCorreios(vetorObjeto[3]);
-        oberlo.setStatusCorreios(vetorObjeto[4]);
-        oberlo.setEtapaAtual(vetorObjeto[5]);
-        return oberlo;
-    }
-
     private Object obterObjetoOberlo(String[] vetorObjeto) {
         ArquivoOberlo oberlo = new ArquivoOberlo();
         oberlo.setIdShopify(vetorObjeto[0]);
+        oberlo.setDataCriacaoPedido(getDataCalendar(vetorObjeto[1]));
         oberlo.setCodRastreamento(vetorObjeto[11]);
         oberlo.setIdAliexpress(vetorObjeto[12]);
         return oberlo;
+    }
+
+    private Calendar getDataCalendar(String dataCriacao) {
+        Calendar calendar = Calendar.getInstance();
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        try {
+            calendar.setTime(sdf.parse(dataCriacao));
+        } catch (ParseException e) {
+            e.printStackTrace();
+        }
+        return calendar;
     }
 
 
@@ -146,11 +159,4 @@ public class RastreamentoCorreiosControlador {
         return new BufferedReader(inputStreamReader);
     }
 
-    public String getApp() {
-        return app;
-    }
-
-    public void setApp(String app) {
-        this.app = app;
-    }
 }

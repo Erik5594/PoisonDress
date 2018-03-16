@@ -8,6 +8,7 @@ public class ArquivoOberlo {
     private String idShopify;
     private String idAliexpress;
     private String codRastreamento;
+    private Calendar dataCriacaoPedido;
     private Calendar dataAlteracaoCorreios;
     private String tipoCorreios;
     private String statusCorreios;
@@ -38,14 +39,6 @@ public class ArquivoOberlo {
 
     public void setCodRastreamento(String codRastreamento) {
         this.codRastreamento = codRastreamento;
-    }
-
-    public Calendar getDataAlteracaoCorreios() {
-        return dataAlteracaoCorreios;
-    }
-
-    public void setDataAlteracaoCorreios(Calendar dataAlteracaoCorreios) {
-        this.dataAlteracaoCorreios = dataAlteracaoCorreios;
     }
 
     public String getTipoCorreios() {
@@ -94,5 +87,38 @@ public class ArquivoOberlo {
 
     public void setChina(boolean china) {
         this.china = china;
+    }
+
+    public Calendar getDataCriacaoPedido() {
+        return dataCriacaoPedido;
+    }
+
+    public void setDataCriacaoPedido(Calendar dataCriacaoPedido) {
+        this.dataCriacaoPedido = dataCriacaoPedido;
+    }
+
+    public Calendar getDataAlteracaoCorreios() {
+        return dataAlteracaoCorreios;
+    }
+
+    public void setDataAlteracaoCorreios(Calendar dataAlteracaoCorreios) {
+        this.dataAlteracaoCorreios = dataAlteracaoCorreios;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if(obj instanceof ArquivoOberlo){
+            ArquivoOberlo arquivoOberlo = (ArquivoOberlo) obj;
+            if(arquivoOberlo == null && this == null){
+                return true;
+            }
+            if(arquivoOberlo.getIdAliexpress() == null && this.getIdAliexpress() == null){
+                return true;
+            }
+            if(arquivoOberlo.getIdAliexpress().equals(this.getIdAliexpress())){
+                return true;
+            }
+        }
+        return false;
     }
 }

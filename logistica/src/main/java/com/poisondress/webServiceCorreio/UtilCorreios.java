@@ -106,9 +106,9 @@ public class UtilCorreios {
         }
     }
 
-    public static boolean isAtrasado(Calendar dataUltimaModificacao, int dias) {
+    public static boolean isAtrasado(Calendar dataFinal, int dias) {
         Calendar hoje = Calendar.getInstance();
-        Calendar prazoFinal = dataUltimaModificacao;
+        Calendar prazoFinal = dataFinal;
         prazoFinal.add(Calendar.DAY_OF_YEAR, dias);
         return prazoFinal.compareTo(hoje) <= 0;
     }
