@@ -36,9 +36,9 @@ public class RastreamentoCorreiosControlador {
 
             List<ArquivoOberlo> objetosOberlo = getListaDeObjetoDoArquivo(obterBufferReader(event.getFile()), ",");
 
-            List<ArquivoOberlo> pedidosEntreques = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosAtrasados = new ArrayList<ArquivoOberlo>();
             List<ArquivoOberlo> pedidosPendenteRetirada = new ArrayList<ArquivoOberlo>();
+            List<String> pedidosEntreques = new ArrayList<String>();
             List<String> estenderPrazoProtecao = new ArrayList<String>();
             List<String> disputa = new ArrayList<String>();
 
@@ -72,8 +72,8 @@ public class RastreamentoCorreiosControlador {
                             estenderPrazoProtecao.add(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress());
                         }
                     }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == entregue
-                            && !pedidosEntreques.contains(dadosOberlo)){
-                        pedidosEntreques.add(dadosOberlo);
+                            && !pedidosEntreques.contains(dadosOberlo.getIdAliexpress())){
+                        pedidosEntreques.add(dadosOberlo.getIdAliexpress());
                     }else if(UtilCorreios.isEtapaAtual(dadosOberlo.getTipoCorreios(), dadosOberlo.getStatusCorreios()) == devolvido){
                         if(!Consts.JA_DISPUTA_ALIEXPRESS.contains(dadosOberlo.getIdAliexpress())
                                 && !disputa.contains(Consts.LINK_PEDIDO_ALIEXPRESS + dadosOberlo.getIdAliexpress())){
@@ -94,19 +94,19 @@ public class RastreamentoCorreiosControlador {
             }
 
             if(pedidosEntreques != null && !pedidosEntreques.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosEntreques, "entregues.csv");
+                UtilCorreios.criarArquivoComLinks(pedidosEntreques, "pedidos-entregues.txt");
             }
             if(pedidosAtrasados != null && !pedidosAtrasados.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosAtrasados, "atrasados.csv");
+                UtilCorreios.criarArquivo(pedidosAtrasados, "abrir-reclamacao-correios.csv");
             }
             if(estenderPrazoProtecao != null && !estenderPrazoProtecao.isEmpty()) {
-                UtilCorreios.criarArquivoComLinks(estenderPrazoProtecao, "atrasados-china.txt");
+                UtilCorreios.criarArquivoComLinks(estenderPrazoProtecao, "estender-prazo-aliexpress.txt");
             }
             if(pedidosPendenteRetirada != null && !pedidosPendenteRetirada.isEmpty()) {
-                UtilCorreios.criarArquivo(pedidosPendenteRetirada, "pendente-entrega.csv");
+                UtilCorreios.criarArquivo(pedidosPendenteRetirada, "pendente-retirada-correios.csv");
             }
             if(disputa != null && !disputa.isEmpty()) {
-                UtilCorreios.criarArquivoComLinks(disputa, "disputa.txt");
+                UtilCorreios.criarArquivoComLinks(disputa, "abrir-disputa-aliexpress.txt");
             }
 
         } catch (Exception e) {
